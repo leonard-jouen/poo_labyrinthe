@@ -10,6 +10,7 @@ class Game{
     private static $player;
     private static $ennemies;
     private static $level = 1;
+    private static $request_reload = false;
 
     public static function init($_player){
         if(self::$level == 1){
@@ -384,7 +385,7 @@ class Game{
         if(mb_strlen($choix) > 0) {
             $_playerPos = self::$player->getPosition();
             if($choix[0] === 'r'){
-                self::init(self::$player);
+                self::$request_reload = true;
             }
             else{
                 if (self::checkDest($choix)) {
@@ -474,23 +475,30 @@ class Game{
                 self::playerChoice();
             }
 
-            if(self::$player->isDead()){
-                echo "\nVous êtes mort! (Niveau " . self::$level . ")";
-                break;
-            }
-            if(self::checkEndGame()){
-                if(self::$level + 1 > LevelData::getMaxLevel()){
-                    self::showMap();
-                    echo "\nFin de la partie! Vous avez gagné";
-                    break;
-                }
-                else{
-                    self::$level++;
-                    self::init(self::$player);
-                }
+            if(self::$request_reload){
+                self::$request_reload = false;
+                self::init(self::$player);
             }
             else{
-                self::ennemy_move();
+                if(self::$player->isDead()){
+                    echo "\nVous êtes mort! (Niveau " . self::$level . ")";
+                    break;
+                }
+
+                if(self::checkEndGame()){
+                    if(self::$level + 1 > LevelData::getMaxLevel()){
+                        self::showMap();
+                        echo "\nFin de la partie! Vous avez gagné";
+                        break;
+                    }
+                    else{
+                        self::$level++;
+                        self::init(self::$player);
+                    }
+                }
+                else{
+                    self::ennemy_move();
+                }
             }
         }
     }
